@@ -1,0 +1,35 @@
+name: check don't merge label on pull requests
+
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+
+jobs:
+  check-dont-merge-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set default env.dont_merge
+        run: echo "dont_merge=false" >> $GITHUB_ENV
+      - name: label was added
+        if: (github.event.action == 'labeled' && github.event.label.name == 'don''t merge')
+        run: echo "dont_merge=true" >> $GITHUB_ENV
+      - name: label was removed
+        if: (github.event.action == 'unlabeled' && github.event.label.name == 'don''t merge')
+        run: echo "dont_merge=false" >> $GITHUB_ENV
+      - name: label was present when changes synchronized
+        if: |
+          github.event.action == 'synchronize' &&
+          contains(github.event.pull_request.labels.*.name, 'don''t merge')
+        run: echo "dont_merge=true" >> $GITHUB_ENV
+      - name: fail if label present
+        run: |
+          if [[ $dont_merge == 'true' ]]; then
+            echo "don't merge label present, failing check to prevent merge"
+            exit 1
+          else
+            echo "don't merge label not present, passing check to allow merge"
+            exit 0
+          f

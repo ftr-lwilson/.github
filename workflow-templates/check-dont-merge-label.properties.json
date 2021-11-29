@@ -1,0 +1,4 @@
+{
+    "name": "FTRLabs - Check don't merge label",
+    "description": "Stops PRs with the 'don't merge' label from being merged."
+}
